@@ -43,7 +43,13 @@
     </dependency> 
   </dependencies>
   
-  
+  <distributionManagement>
+   <repository>
+     <id>github</id>
+     <name>GitHub ARTIEROCKS Apache Maven Packages</name>
+     <url>https://maven.pkg.github.com/ARTIEROCKS/Common</url>
+   </repository>
+</distributionManagement>
 
   <build>
     <plugins>
