@@ -10,7 +10,7 @@
   </parent>
   <groupId>artie.sensor</groupId>
   <artifactId>common</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <name>common</name>
   <description>Common library for ARTIE sensors</description>
 
