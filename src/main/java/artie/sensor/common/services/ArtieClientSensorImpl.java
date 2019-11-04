@@ -31,7 +31,7 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	public List<SensorObject> getSensorData(){
 		return this.sensorData;
 	}
-	private void setSensorData(List<SensorObject> sensorData){
+	public void setSensorData(List<SensorObject> sensorData){
 		this.sensorData = sensorData;
 	}
 	
