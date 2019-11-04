@@ -1,7 +1,11 @@
 package artie.sensor.common.services;
 
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +13,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import artie.sensor.common.dto.SensorObject;
@@ -98,16 +103,35 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	public void writeDataToFile(){
 		
 		ObjectMapper mapper = new ObjectMapper();
-		File file = new File(this.configuration.get(ConfigurationEnum.SENSOR_FILE_FILENAME.toString()));
+		StringWriter sw = new StringWriter();
+		FileWriter fw = null;
 		
-		//Writting the sensor data
-		this.sensorData.forEach(data->{
+		//If the sensor data contains sensor information
+		if(this.sensorData.size() > 0){
 			try {
-				mapper.writeValue(file, data);
+				fw = new FileWriter(this.configuration.get(ConfigurationEnum.SENSOR_FILE_FILENAME.toString()));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}		
+		
+			//Writing the sensor data
+			this.sensorData.forEach(data->{
+				try {
+					sw.write(mapper.writeValueAsString(data));
+					sw.write("\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
+			
+			//Writing in the file
+			try {
+				fw.write(sw.toString());
+				fw.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		});
+		}
 	}
 	
 	/**
