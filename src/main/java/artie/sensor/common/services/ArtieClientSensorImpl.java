@@ -54,17 +54,6 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 		this.configuration = configuration;
 	}
 	
-	/**
-	 * Start function
-	 */
-	public void start(){
-	}
-	
-	/**
-	 * Stop function
-	 */
-	public void stop(){
-	}
 	
 	/**
 	 * Default Constructor
