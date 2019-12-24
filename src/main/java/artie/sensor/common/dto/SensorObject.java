@@ -4,12 +4,15 @@ import java.util.Date;
 
 import org.springframework.stereotype.Component;
 
+import artie.sensor.common.enums.SensorObjectTypeEnum;
+
 @Component
 public class SensorObject {
 	//Attributes
 	protected Date date;
 	protected long milliseconds;
 	protected Object data;
+	protected SensorObjectTypeEnum sensorObjectType;
 	
 	//Properties
 	public Date getDate(){
@@ -29,6 +32,13 @@ public class SensorObject {
 		return this.milliseconds;
 	}
 	
+	public SensorObjectTypeEnum getSensorObjectType(){
+		return this.sensorObjectType;
+	}
+	public void setSensorObjectType(SensorObjectTypeEnum sensorObjectType){
+		this.sensorObjectType = sensorObjectType;
+	}
+	
 	/**
 	 * Default constructor
 	 */
@@ -44,5 +54,19 @@ public class SensorObject {
 		this.date = date;
 		this.milliseconds = this.date.getTime();
 		this.data = data;
+		this.sensorObjectType = SensorObjectTypeEnum.STRING;
+	}
+	
+	/**
+	 * Parameterized constructor
+	 * @param date
+	 * @param data
+	 * @param sensorObjectType
+	 */
+	public SensorObject(Date date, Object data, SensorObjectTypeEnum sensorObjectType){
+		this.date = date;
+		this.milliseconds = this.date.getTime();
+		this.data = data;
+		this.sensorObjectType = sensorObjectType;
 	}
 }
