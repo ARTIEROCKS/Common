@@ -15,7 +15,6 @@ public interface ArtieClientSensor {
 	//Control methods
 	public void start();
 	public void stop();
-	public void shutdown();
 	
 	//Data function
 	public List<SensorObject> getSensorData();
