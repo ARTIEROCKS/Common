@@ -174,6 +174,9 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 				}
 			});
 			
+			//Cleaning the sensor data
+			this.sensorData.clear();
+			
 		}
 				
 	}
