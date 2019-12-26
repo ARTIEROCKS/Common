@@ -8,15 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ser.std.StringSerializer;
 
 import artie.sensor.common.dto.SensorObject;
 import artie.sensor.common.enums.ConfigurationEnum;
@@ -28,7 +26,7 @@ import artie.sensor.common.interfaces.ArtieClientSensor;
 public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 
 	@Autowired
-	private ApplicationContext applicationContext;
+	private JmsMessagingTemplate jmsMessagingTemplate;
 	
 	//Attributes
 	protected String name;
@@ -71,10 +69,9 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	public ArtieClientSensorImpl(){
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_REGISTRATION.toString(), "false");
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_FILENAME.toString(), "ARTIE_Sensor.log");
-		this.configuration.putIfAbsent(ConfigurationEnum.KAFKA_SERVER_ACTIVE.toString(), "false");
-		this.configuration.putIfAbsent(ConfigurationEnum.KAFKA_SERVER.toString(), "");
-		this.configuration.putIfAbsent(ConfigurationEnum.KAFKA_TOPIC.toString(), "");
-		this.configuration.putIfAbsent(ConfigurationEnum.KAFKA_KEY.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER_ACTIVE.toString(), "false");
+		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.MQ_QUEUE.toString(), "");
 	}
 	
 	/**
@@ -84,10 +81,9 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	public ArtieClientSensorImpl(Map<String, String> configuration){
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_REGISTRATION.toString(), "false");
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_FILENAME.toString(), "ARTIE_Sensor.log");
-		this.configuration.putIfAbsent(ConfigurationEnum.KAFKA_SERVER_ACTIVE.toString(), "false");
-		this.configuration.putIfAbsent(ConfigurationEnum.KAFKA_SERVER.toString(), "");
-		this.configuration.putIfAbsent(ConfigurationEnum.KAFKA_TOPIC.toString(), "");
-		this.configuration.putIfAbsent(ConfigurationEnum.KAFKA_KEY.toString(),"");
+		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER_ACTIVE.toString(), "false");
+		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.MQ_QUEUE.toString(), "");
 		this.configuration.putAll(configuration);
 	}
 	
@@ -151,15 +147,11 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	public void sendSensorData(){
 		
 		//Getting the kafka configuration
-		boolean kafkaServerActive = Boolean.parseBoolean(this.configuration.get(ConfigurationEnum.KAFKA_SERVER_ACTIVE.toString()));
-		String kafkaServer = this.configuration.get(ConfigurationEnum.KAFKA_SERVER.toString());
-		String kafkaTopic = this.configuration.get(ConfigurationEnum.KAFKA_TOPIC.toString());
-		String kafkaKey = this.configuration.get(ConfigurationEnum.KAFKA_TOPIC.toString());
+		boolean mqServerActive = Boolean.parseBoolean(this.configuration.get(ConfigurationEnum.MQ_SERVER_ACTIVE.toString()));
+		String mqServer = this.configuration.get(ConfigurationEnum.MQ_SERVER.toString());
+		String mqQueue = this.configuration.get(ConfigurationEnum.MQ_QUEUE.toString());
 		
-		if(kafkaServerActive && !kafkaServer.isEmpty() && !kafkaTopic.isEmpty() && this.sensorData.size() > 0){
-			
-			@SuppressWarnings("unchecked")
-			KafkaTemplate<String, String> kafkaTemplate = (KafkaTemplate<String, String>) applicationContext.getBean("kafkaTemplate", this.configuration);
+		if(mqServerActive && !mqServer.isEmpty() && !mqQueue.isEmpty() && this.sensorData.size() > 0){
 			
 			//Java Object to JSON
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -168,7 +160,7 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 			this.sensorData.forEach(sensorObject->{		
 				try {
 					String message = objectMapper.writeValueAsString(sensorObject);
-					kafkaTemplate.send(kafkaTopic, kafkaKey, message);
+					this.jmsMessagingTemplate.convertAndSend(mqQueue, message);
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 				}

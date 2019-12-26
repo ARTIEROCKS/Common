@@ -13,6 +13,7 @@ public class SensorObject {
 	protected long milliseconds;
 	protected Object data;
 	protected SensorObjectTypeEnum sensorObjectType;
+	protected String sensorName;
 	
 	//Properties
 	public Date getDate(){
@@ -39,6 +40,13 @@ public class SensorObject {
 		this.sensorObjectType = sensorObjectType;
 	}
 	
+	public String getSensorName(){
+		return this.sensorName;
+	}
+	public void setSensorName(String sensorName){
+		this.sensorName = sensorName;
+	}
+	
 	/**
 	 * Default constructor
 	 */
@@ -50,11 +58,12 @@ public class SensorObject {
 	 * @param date
 	 * @param data
 	 */
-	public SensorObject(Date date, Object data){
+	public SensorObject(Date date, Object data, String sensorName){
 		this.date = date;
 		this.milliseconds = this.date.getTime();
 		this.data = data;
 		this.sensorObjectType = SensorObjectTypeEnum.STRING;
+		this.sensorName = sensorName;
 	}
 	
 	/**
@@ -63,10 +72,11 @@ public class SensorObject {
 	 * @param data
 	 * @param sensorObjectType
 	 */
-	public SensorObject(Date date, Object data, SensorObjectTypeEnum sensorObjectType){
+	public SensorObject(Date date, Object data, SensorObjectTypeEnum sensorObjectType, String sensorName){
 		this.date = date;
 		this.milliseconds = this.date.getTime();
 		this.data = data;
 		this.sensorObjectType = sensorObjectType;
+		this.sensorName = sensorName;
 	}
 }
