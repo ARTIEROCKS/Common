@@ -8,12 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.jms.core.JmsMessagingTemplate;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.springframework.jms.connection.CachingConnectionFactory;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import artie.sensor.common.dto.SensorObject;
@@ -24,9 +25,6 @@ import artie.sensor.common.interfaces.ArtieClientSensor;
 
 @Service
 public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
-
-	@Autowired
-	private JmsMessagingTemplate jmsMessagingTemplate;
 	
 	//Attributes
 	protected String name;
@@ -34,6 +32,9 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	protected String author;
 	protected List<SensorObject> sensorData = new ArrayList<SensorObject>();
 	protected Map<String, String> configuration = new HashMap<String, String>();
+	
+	
+	private JmsTemplate jmsMessagingTemplate;
 	
 	//Properties
 	public List<SensorObject> getSensorData(){
@@ -61,6 +62,15 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	public void setConfiguration(Map<String, String> configuration){
 		this.configuration = configuration;
 	}
+	public void setConfiguration(String jsonSensorConfiguration){
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			Map<String,String> configuration = mapper.readValue(jsonSensorConfiguration, new TypeReference<HashMap<String,String>>(){});
+			this.configuration = configuration;
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	
 	/**
@@ -85,6 +95,21 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER.toString(), "");
 		this.configuration.putIfAbsent(ConfigurationEnum.MQ_QUEUE.toString(), "");
 		this.configuration.putAll(configuration);
+	}
+	
+	/**
+	 * Function that provides the JMSMessaging template
+	 * @param brokerUrl
+	 * @return
+	 */
+	private JmsTemplate getJmsMessagingTemplate(String brokerUrl){
+		
+		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
+		activeMQConnectionFactory.setBrokerURL(brokerUrl);
+		
+		CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(activeMQConnectionFactory);
+		
+		return new JmsTemplate(cachingConnectionFactory);
 	}
 	
 	/**
@@ -142,11 +167,11 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	}
 	
 	/**
-	 * Function to send the data to Kafka server
+	 * Function to send the data to a Broker server
 	 */
 	public void sendSensorData(){
 		
-		//Getting the kafka configuration
+		//Getting the mq configuration
 		boolean mqServerActive = Boolean.parseBoolean(this.configuration.get(ConfigurationEnum.MQ_SERVER_ACTIVE.toString()));
 		String mqServer = this.configuration.get(ConfigurationEnum.MQ_SERVER.toString());
 		String mqQueue = this.configuration.get(ConfigurationEnum.MQ_QUEUE.toString());
@@ -156,7 +181,12 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 			//Java Object to JSON
 			ObjectMapper objectMapper = new ObjectMapper();
 			
-			//Sending all the data to kafka
+			//Sets the messaging template if the template is null
+			if(this.jmsMessagingTemplate == null){
+				this.jmsMessagingTemplate = this.getJmsMessagingTemplate(mqServer);
+			}
+			
+			//Sending all the data to the broker
 			this.sensorData.forEach(sensorObject->{		
 				try {
 					String message = objectMapper.writeValueAsString(sensorObject);
