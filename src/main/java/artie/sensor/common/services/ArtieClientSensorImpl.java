@@ -8,9 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.springframework.jms.connection.CachingConnectionFactory;
-import org.springframework.jms.core.JmsTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,6 +18,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import artie.sensor.common.dto.SensorObject;
 import artie.sensor.common.enums.ConfigurationEnum;
 import artie.sensor.common.interfaces.ArtieClientSensor;
+import artie.sensor.common.model.SensorData;
+import artie.sensor.common.repository.SensorDataRepository;
 
 
 
@@ -32,9 +32,11 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	protected String author;
 	protected List<SensorObject> sensorData = new ArrayList<SensorObject>();
 	protected Map<String, String> configuration = new HashMap<String, String>();
+	protected ObjectMapper mapper = new ObjectMapper();
 	
+	@Autowired
+	protected SensorDataRepository sensorDataRepository;
 	
-	private JmsTemplate jmsMessagingTemplate;
 	
 	//Properties
 	public List<SensorObject> getSensorData(){
@@ -97,20 +99,6 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 		this.configuration.putAll(configuration);
 	}
 	
-	/**
-	 * Function that provides the JMSMessaging template
-	 * @param brokerUrl
-	 * @return
-	 */
-	private JmsTemplate getJmsMessagingTemplate(String brokerUrl){
-		
-		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
-		activeMQConnectionFactory.setBrokerURL(brokerUrl);
-		
-		CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(activeMQConnectionFactory);
-		
-		return new JmsTemplate(cachingConnectionFactory);
-	}
 	
 	/**
 	 * Function to add the sensor object to the data collection
@@ -167,40 +155,25 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	}
 	
 	/**
-	 * Function to send the data to a Broker server
+	 * Function to insert the data into the h2 database server
 	 */
 	public void sendSensorData(){
 		
-		//Getting the mq configuration
-		boolean mqServerActive = Boolean.parseBoolean(this.configuration.get(ConfigurationEnum.MQ_SERVER_ACTIVE.toString()));
-		String mqServer = this.configuration.get(ConfigurationEnum.MQ_SERVER.toString());
-		String mqQueue = this.configuration.get(ConfigurationEnum.MQ_QUEUE.toString());
-		
-		if(mqServerActive && !mqServer.isEmpty() && !mqQueue.isEmpty() && this.sensorData.size() > 0){
-			
-			//Java Object to JSON
-			ObjectMapper objectMapper = new ObjectMapper();
-			
-			//Sets the messaging template if the template is null
-			if(this.jmsMessagingTemplate == null){
-				this.jmsMessagingTemplate = this.getJmsMessagingTemplate(mqServer);
+		//Inserts all the sensor data in json format
+		this.sensorData.forEach(data ->{
+			String jsonSensorData;
+			try {
+				jsonSensorData = mapper.writeValueAsString(data);
+				this.sensorDataRepository.save(new SensorData(jsonSensorData));
+			} catch (JsonProcessingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			
-			//Sending all the data to the broker
-			this.sensorData.forEach(sensorObject->{		
-				try {
-					String message = objectMapper.writeValueAsString(sensorObject);
-					this.jmsMessagingTemplate.convertAndSend(mqQueue, message);
-				} catch (JsonProcessingException e) {
-					e.printStackTrace();
-				}
-			});
-			
-			//Cleaning the sensor data
-			this.sensorData.clear();
-			
-		}
-				
+		});
+		
+		//Clears all the sensor data
+		this.sensorData.clear();
+		
 	}
 
 }
