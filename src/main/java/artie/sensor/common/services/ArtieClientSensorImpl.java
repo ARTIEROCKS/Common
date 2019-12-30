@@ -3,18 +3,21 @@ package artie.sensor.common.services;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import artie.sensor.common.config.DataSourceConfig;
 import artie.sensor.common.dto.SensorObject;
 import artie.sensor.common.enums.ConfigurationEnum;
 import artie.sensor.common.interfaces.ArtieClientSensor;
@@ -34,7 +37,10 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	protected Map<String, String> configuration = new HashMap<String, String>();
 	protected ObjectMapper mapper = new ObjectMapper();
 	
+	//Connection attributes
 	@Autowired
+	protected DataSourceConfig dataSourceConfig;
+	protected JdbcTemplate jdbcTemplate;
 	protected SensorDataRepository sensorDataRepository;
 	
 	
@@ -81,9 +87,10 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	public ArtieClientSensorImpl(){
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_REGISTRATION.toString(), "false");
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_FILENAME.toString(), "ARTIE_Sensor.log");
-		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER_ACTIVE.toString(), "false");
-		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER.toString(), "");
-		this.configuration.putIfAbsent(ConfigurationEnum.MQ_QUEUE.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_DRIVER_CLASS.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_URL.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_USER.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_PASSWD.toString(), "");
 	}
 	
 	/**
@@ -93,9 +100,10 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	public ArtieClientSensorImpl(Map<String, String> configuration){
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_REGISTRATION.toString(), "false");
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_FILENAME.toString(), "ARTIE_Sensor.log");
-		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER_ACTIVE.toString(), "false");
-		this.configuration.putIfAbsent(ConfigurationEnum.MQ_SERVER.toString(), "");
-		this.configuration.putIfAbsent(ConfigurationEnum.MQ_QUEUE.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_DRIVER_CLASS.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_URL.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_USER.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_PASSWD.toString(), "");
 		this.configuration.putAll(configuration);
 	}
 	
@@ -159,17 +167,44 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	 */
 	public void sendSensorData(){
 		
-		//Inserts all the sensor data in json format
-		this.sensorData.forEach(data ->{
-			String jsonSensorData;
+		//Checks if the jdbcTemplate is null
+		if(this.jdbcTemplate == null && this.dataSourceConfig !=null ) {
+			
+			//We create a new jdbcTemplate
 			try {
-				jsonSensorData = mapper.writeValueAsString(data);
-				this.sensorDataRepository.save(new SensorData(jsonSensorData));
-			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
+				this.jdbcTemplate = this.dataSourceConfig.jdbcTemplate(this.configuration.get(ConfigurationEnum.DB_DRIVER_CLASS.toString()), 
+																	   this.configuration.get(ConfigurationEnum.DB_URL.toString()), 
+																	   this.configuration.get(ConfigurationEnum.DB_USER.toString()), 
+																	   this.configuration.get(ConfigurationEnum.DB_PASSWD.toString()));
+			} catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
 				e.printStackTrace();
 			}
-		});
+		}
+		
+		//Checks if the repository is null
+		if(this.sensorDataRepository == null & this.jdbcTemplate != null) {
+			
+			//We create the new repository with the jdbcTemplate
+			this.sensorDataRepository = new SensorDataRepository(this.jdbcTemplate);
+		}
+		
+		//Checks if the sensor data repository is not null
+		if(this.sensorDataRepository != null) {
+			
+			//Inserts all the sensor data in json format
+			this.sensorData.forEach(data ->{
+				
+				String jsonSensorData;
+				try {
+					jsonSensorData = mapper.writeValueAsString(data);
+					this.sensorDataRepository.save(new SensorData(jsonSensorData));
+				} catch (JsonProcessingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+			
+		}	
 		
 		//Clears all the sensor data
 		this.sensorData.clear();
