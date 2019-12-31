@@ -189,7 +189,7 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 		}
 		
 		//Checks if the sensor data repository is not null
-		if(this.sensorDataRepository != null) {
+		if(this.sensorDataRepository != null && this.sensorData.size() > 0) {
 			
 			//Inserts all the sensor data in json format
 			this.sensorData.forEach(data ->{

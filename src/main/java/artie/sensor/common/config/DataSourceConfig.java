@@ -5,7 +5,6 @@ import java.sql.Driver;
 
 import javax.sql.DataSource;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,6 @@ public class DataSourceConfig {
 	 * @throws InvocationTargetException
 	 * @throws InstantiationException
 	 */
-	@Bean
 	public JdbcTemplate jdbcTemplate(String paramDriver, String paramUrl, String paramUser, String paramPasswd) throws IllegalAccessException, InvocationTargetException, InstantiationException {
 	    
 		//Extracting the needed parameters
