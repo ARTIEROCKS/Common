@@ -167,6 +167,7 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	 */
 	public void sendSensorData(){
 		
+		
 		//Checks if the jdbcTemplate is null
 		if(this.jdbcTemplate == null && this.dataSourceConfig !=null ) {
 			

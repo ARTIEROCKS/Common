@@ -61,9 +61,10 @@ public class SensorObject {
 	public SensorObject(Date date, Object data, String sensorName){
 		this.date = date;
 		this.milliseconds = this.date.getTime();
-		this.data = data;
 		this.sensorObjectType = SensorObjectTypeEnum.STRING;
 		this.sensorName = sensorName;
+		this.data = data;
+		
 	}
 	
 	/**
@@ -75,8 +76,8 @@ public class SensorObject {
 	public SensorObject(Date date, Object data, SensorObjectTypeEnum sensorObjectType, String sensorName){
 		this.date = date;
 		this.milliseconds = this.date.getTime();
-		this.data = data;
 		this.sensorObjectType = sensorObjectType;
 		this.sensorName = sensorName;
+		this.data = data;
 	}
 }
