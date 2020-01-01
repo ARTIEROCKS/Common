@@ -18,8 +18,10 @@ public interface ArtieClientSensor {
 	
 	//Data function
 	public List<SensorObject> getSensorData();
+	public void sendSensorData();
 	
 	//Configuration
 	public Map<String, String> getConfiguration();
 	public void setConfiguration(Map<String, String> configuration);
+	public void setConfiguration(String configuration);
 }

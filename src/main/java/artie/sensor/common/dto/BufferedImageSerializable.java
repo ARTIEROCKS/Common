@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Base64;
+
 import javax.imageio.ImageIO;
 
 /**
@@ -16,7 +18,12 @@ import javax.imageio.ImageIO;
  */
 public class BufferedImageSerializable implements Serializable {
     
-    //Attributes
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	//Attributes
     private BufferedImage bufferedImage;
     
     //Properties
@@ -41,6 +48,41 @@ public class BufferedImageSerializable implements Serializable {
         this.bufferedImage = bufferedImage;
     }
     
+    /**
+     * Image Serialization method
+     */
+    public String imageSerialization() throws IOException {
+         
+         byte[] imageInByte;
+         ByteArrayOutputStream baos;
+         String imageString;
+
+         //Transforming the screenCapture into a byte array
+         baos = new ByteArrayOutputStream();
+         ImageIO.write(this.bufferedImage, "jpg", baos);
+         imageInByte = baos.toByteArray();
+         baos.flush();
+         baos.close(); 
+         imageString = Base64.getEncoder().encodeToString(imageInByte);
+         
+         return imageString;
+    }
+    
+    /**
+     * Function to transform a byte array into a buffered image
+     * @param webcamCaptureBytes
+     * @return
+     * @throws IOException 
+     */
+    public BufferedImageSerializable imageDeserialization(String bufferedImage) throws IOException{
+        
+         byte[] webcamCaptureBytes = Base64.getDecoder().decode(bufferedImage);
+         BufferedImage bImageFromConvert =ImageIO.read(new ByteArrayInputStream(webcamCaptureBytes));
+         BufferedImageSerializable bufferedImageSerializable = new BufferedImageSerializable(bImageFromConvert);
+         
+         return bufferedImageSerializable;
+        
+    }
     
     /**
      * Custom serializable write function
