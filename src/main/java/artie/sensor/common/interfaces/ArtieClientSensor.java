@@ -13,6 +13,7 @@ public interface ArtieClientSensor {
 	public String getAuthor();
 	
 	//Control methods
+	public boolean getIsAlive();
 	public void start();
 	public void stop();
 	

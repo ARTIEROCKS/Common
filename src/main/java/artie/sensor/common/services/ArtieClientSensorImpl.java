@@ -33,6 +33,7 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	protected String name;
 	protected String version;
 	protected String author;
+	protected boolean isAlive = false;
 	protected List<SensorObject> sensorData = new ArrayList<SensorObject>();
 	protected Map<String, String> configuration = new HashMap<String, String>();
 	protected ObjectMapper mapper = new ObjectMapper();
@@ -62,6 +63,10 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	
 	public String getAuthor(){
 		return this.author;
+	}
+	
+	public boolean getIsAlive() {
+		return this.isAlive;
 	}
 	
 	public Map<String,String> getConfiguration(){
