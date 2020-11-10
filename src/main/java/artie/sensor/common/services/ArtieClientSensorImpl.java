@@ -9,7 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +40,9 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	protected List<SensorObject> sensorData = new ArrayList<SensorObject>();
 	protected Map<String, String> configuration = new HashMap<String, String>();
 	protected ObjectMapper mapper = new ObjectMapper();
+	
+	@Value("${artie.sensor.datalimit}")
+	protected long sensorDataLimit;
 	
 	//Connection attributes
 	@Autowired
@@ -85,11 +91,28 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 		}
 	}
 	
+	public long getSensorDataLimit() {
+		return this.sensorDataLimit;
+	}
+	public void setSensorDataLimit(long sensorDataLimit) {
+		this.sensorDataLimit = sensorDataLimit;
+	}
+	
 	
 	/**
 	 * Default Constructor
 	 */
 	public ArtieClientSensorImpl(){
+		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_REGISTRATION.toString(), "false");
+		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_FILENAME.toString(), "ARTIE_Sensor.log");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_DRIVER_CLASS.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_URL.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_USER.toString(), "");
+		this.configuration.putIfAbsent(ConfigurationEnum.DB_PASSWD.toString(), "");
+	}
+	
+	@PostConstruct
+	public void init() {
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_REGISTRATION.toString(), "false");
 		this.configuration.putIfAbsent(ConfigurationEnum.SENSOR_FILE_FILENAME.toString(), "ARTIE_Sensor.log");
 		this.configuration.putIfAbsent(ConfigurationEnum.DB_DRIVER_CLASS.toString(), "");
@@ -118,6 +141,13 @@ public abstract class ArtieClientSensorImpl implements ArtieClientSensor {
 	 * @param object
 	 */
 	public void addSensorObject(SensorObject object){
+		
+		//Checks if the sensor data has reached the limit or not
+		if(this.sensorData.size() >= this.sensorDataLimit) {
+			//If the sensor data has reached the limit, we remove the first (oldest) element of the sensor data
+			this.sensorData.remove(0);
+		}
+		
 		this.sensorData.add(object);
 	}
 	

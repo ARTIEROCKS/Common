@@ -55,16 +55,16 @@
   </dependencies>
   
   <distributionManagement>
-    <repository>
-        <id>release</id>
-        <name>ARTIE internal repository</name>
-        <url>http://nexus.ai-mind.com:8081/nexus/content/repositories/releases/</url>
-    </repository>  
-    <snapshotRepository>
-        <id>snapshot</id>
-        <name>ARTIE internal repository</name>
-        <url>http://nexus.ai-mind.com:8081/nexus/content/repositories/snapshots/</url>
-    </snapshotRepository>
+    	<repository>
+        	<id>release</id>
+        	<name>ARTIE repository</name>
+        	<url>http://nexus.ai-mind.com:8081/nexus/repository/maven-releases/</url>
+    	</repository>  
+    	<snapshotRepository>
+        	<id>snapshot</id>
+        	<name>ARTIE repository</name>
+        	<url>http://nexus.ai-mind.com:8081/nexus/repository/maven-snapshots/</url>
+    	</snapshotRepository>
   </distributionManagement>
   
   <profiles>
