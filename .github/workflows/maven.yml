@@ -1,21 +1,21 @@
-name: Java master
-
+name: Publish package to the ARTIE Repository and GitHub Packages
 on:
-  push:
-    # Sequence of patterns matched against refs/heads
-    branches:    
-      - master         # Push events on master branch
-
+  release:
+    types: [created]
 jobs:
-  build:
-
+  publish:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-    - name: Build with Maven
-      run: mvn clean install test
+      - uses: actions/checkout@v2
+      - name: Set up Java for publishing to Maven Central Repository
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+          server-id: release
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Publish to the Maven Central Repository
+        run: mvn -B deploy
+        env:
+          MAVEN_USERNAME: ${{ secrets.ARTIE_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.ARTIE_TOKEN }}
