@@ -10,6 +10,7 @@ import artie.sensor.common.enums.SensorObjectTypeEnum;
 @Component
 public class SensorObject {
 	//Attributes
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
 	protected Date date;
 	protected long milliseconds;
 	protected Object data;
