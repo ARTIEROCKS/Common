@@ -10,15 +10,15 @@ import artie.sensor.common.enums.SensorObjectTypeEnum;
 @Component
 public class SensorObject {
 	//Attributes
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, hh:mm:ss")
 	protected Date date;
 	protected long milliseconds;
 	protected Object data;
 	protected SensorObjectTypeEnum sensorObjectType;
 	protected String sensorName;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, hh:mm:ss")
 	protected Date fromDate;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, hh:mm:ss")
 	protected Date toDate;
 	
 	//Properties
