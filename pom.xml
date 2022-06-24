@@ -10,7 +10,7 @@
   </parent>
   <groupId>artie.sensor</groupId>
   <artifactId>common</artifactId>
-  <version>1.1.0-RELEASE</version>
+  <version>1.1.1-RELEASE</version>
   <name>common</name>
   <description>Common library for ARTIE sensors</description>
 
@@ -51,7 +51,14 @@
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>${jackson-databind.version}</version>
-    </dependency> 
+    </dependency>
+      <!-- TOOLS -->
+      <dependency>
+          <groupId>org.projectlombok</groupId>
+          <artifactId>lombok</artifactId>
+          <version>1.18.24</version>
+          <scope>provided</scope>
+      </dependency>
   </dependencies>
   
   <distributionManagement>
