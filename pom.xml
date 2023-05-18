@@ -61,18 +61,20 @@
       </dependency>
   </dependencies>
   
-  <distributionManagement>
-    	<repository>
-        	<id>release</id>
-        	<name>ARTIE repository</name>
-        	<url>http://nexus.ai-mind.com:8081/nexus/repository/maven-releases/</url>
-    	</repository>  
-    	<snapshotRepository>
-        	<id>snapshot</id>
-        	<name>ARTIE repository</name>
-        	<url>http://nexus.ai-mind.com:8081/nexus/repository/maven-snapshots/</url>
-    	</snapshotRepository>
-  </distributionManagement>
+  <repositories>
+		<repository>
+			<id>central</id>
+			<name>Maven Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+	</repositories>
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub Repository</name>
+			<url>https://maven.pkg.github.com/ARTIEROCKS/artie-sensor-common</url>
+		</repository>
+	</distributionManagement>
   
   <profiles>
         <profile>
